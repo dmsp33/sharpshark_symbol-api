@@ -1,0 +1,24 @@
+version = 0.1
+[testnet]
+[testnet.deploy]
+[testnet.deploy.parameters]
+stack_name = "symbol-api"
+s3_bucket = "xxx"
+s3_prefix = "symbol-api"
+region = "xxx"
+profile = "sharpshark"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "NetworkName=\"testnet\""
+
+[mainnet]
+[mainnet.deploy]
+[mainnet.deploy.parameters]
+stack_name = "mainnet-symbol-api"
+s3_bucket = "xxx"
+s3_prefix = "mainnet-symbol-api"
+region = "xxx"
+profile = "sharpshark"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "NetworkName=\"mainnet\""

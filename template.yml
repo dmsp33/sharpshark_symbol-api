@@ -1,0 +1,86 @@
+Transform: AWS::Serverless-2016-10-31
+
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: "SharpShark - Blockchain App Layer for Symbol"
+
+Parameters:
+  NetworkName:
+    Type: String
+    AllowedValues: [testnet, mainnet]
+
+
+Mappings:
+  Config:
+    testnet:
+      publicKey: "xxx"
+      address: "xxx"
+      explorerUrl: "http://explorer.testnet.symboldev.network/transactions"
+      nodeUrl: "http://ngl-dual-101.testnet.symboldev.network:3000"
+      networkGenerationHash: xxx
+    mainnet:
+      publicKey: "xxx"
+      address: "xxx"
+      explorerUrl: "http://explorer.symbolblockchain.io/transactions"
+      nodeUrl: "http://ngl-dual-001.symbolblockchain.io:3000"
+      networkGenerationHash: xxx
+
+Globals:
+  Function:
+    Runtime: nodejs12.x
+    MemorySize: 128
+    Timeout: 100
+    AutoPublishAlias: live
+    DeploymentPreference:
+      Type: AllAtOnce
+    Environment:
+        Variables:
+          NETWORK: !Sub "${NetworkName}"
+          PV_KEY: !Sub "secret/${NetworkName}"
+          PUB_KEY: !FindInMap [ Config, !Ref NetworkName, publicKey ]
+          ADDRESS: !FindInMap [ Config, !Ref NetworkName, address ]
+          EXPLORER_URL: !FindInMap [ Config, !Ref NetworkName, explorerUrl ]
+          NODE_URL: !FindInMap [ Config, !Ref NetworkName, nodeUrl ]
+          NETWORK_HASH: !FindInMap [ Config, !Ref NetworkName, networkGenerationHash ]
+
+Resources:
+  SharpApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref NetworkName
+  ApostilleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${NetworkName}-ApostilleFunction"
+      Handler: src/handlers/apostille.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        PostIPFSApostille:
+          Type: Api
+          Properties:
+            Path: /apostille/ipfs/{hashipfs}
+            Method: POST
+            RestApiId:
+              Ref: SharpApi
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        - "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+
+Outputs:
+  WebEndpoint:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${SharpApi}.execute-api.${AWS::Region}.amazonaws.com/${NetworkName}/"

@@ -1,0 +1,6 @@
+{
+    "resource":"/apostille",
+    "path":"/apostille",
+    "httpMethod": "POST",
+    "body": "{\"message\": \"gibi test\"}"
+}

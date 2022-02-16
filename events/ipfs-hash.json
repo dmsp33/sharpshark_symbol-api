@@ -1,0 +1,8 @@
+{
+    "resource":"/apostille/ipfs/{hashipfs}",
+    "path":"/apostille/ipfs/asdf1234",
+    "httpMethod": "POST",
+    "pathParameters": {
+        "hashipfs":"asdf1234"
+    }
+}
